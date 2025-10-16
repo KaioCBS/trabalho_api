@@ -1,0 +1,53 @@
+services:
+  tab_postgres:
+    image: postgres:16
+    container_name: tab_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: tra_api
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: 123456
+    ports:
+      - "8080:80"
+    depends_on:
+      - tab_postgres
+
+  tab_redis:
+    image: redis:8
+    container_name: tab_redis
+    ports:
+      - "6379:6379"
+
+  tab_api:
+    build: .
+    container_name: tab_api
+    command: sh -c "until pg_isready -h tab_postgres -p 5432 -U postgres; do echo '⏳ Waiting for Postgres...'; sleep 2; done && npm start"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=tab_postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=123456
+      - DB_NAME=tra_api
+      - REDIS_HOST=tab_redis
+      - REDIS_PORT=6379
+    depends_on:
+      - tab_postgres
+      - tab_redis
+    restart: on-failure
+
+volumes:
+  pgdata:
