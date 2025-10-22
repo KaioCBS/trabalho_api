@@ -1,26 +1,50 @@
 // src/controllers/reenvioController.js
-const Joi = require('joi');
-const reenvioService = require('../services/reenvioService');
+const { v4: uuidv4 } = require('uuid');
+const { Protocolo } = require('../models');
 
+// Exemplo de schema de validação (caso use Joi ou algo semelhante)
+const Joi = require('joi');
 const schema = Joi.object({
-  product: Joi.string().valid('boleto', 'pagamento', 'pix').required(),
-  id: Joi.array().items(Joi.string()).min(1).max(30).required(),
-  kind: Joi.string().valid('webhook').required(),
-  type: Joi.string().valid('disponivel', 'cancelado', 'pago').required(),
+  tipo: Joi.string().required(),
+  dados: Joi.object().required(),
 });
 
 async function postReenviar(req, res) {
   try {
-    const data = req.body;
-    // já validado por middleware, mas reafirmar
-    const result = await reenvioService.createReenvio(data, req.cedente);
-    return res.status(201).json({ protocolo: result.protocolo });
-  } catch (err) {
-    if (err && err.status) {
-      return res.status(err.status).json({ message: err.message, details: err.mismatched || null });
+    // 🔹 Validação básica do corpo da requisição
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        details: error.details.map((d) => d.message),
+      });
     }
-    console.error('postReenviar error', err);
-    return res.status(400).json({ message: 'Não foi possível gerar a notificação. Tente novamente mais tarde.' });
+
+    const { tipo, dados } = req.body;
+
+    // 🔹 Simula envio de dados (você pode substituir por sua lógica real de reenvio)
+    console.log('📤 Reenviando dados para processamento:', { tipo, dados });
+
+    // 🔹 Criação do registro de protocolo
+    const novoProtocolo = await Protocolo.create({
+      uuid: uuidv4(),
+      produto: tipo,
+      dados,
+      data_envio: new Date(),
+      status: 'processando',
+      softwarehouse_id: req.softwareHouse ? req.softwareHouse.id : null,
+      cedente_id: req.cedente ? req.cedente.id : null,
+    });
+
+    // 🔹 Retorna a resposta esperada
+    return res.status(201).json({
+      message: 'Reenvio iniciado com sucesso.',
+      protocolo: novoProtocolo.uuid,
+      status: novoProtocolo.status,
+    });
+  } catch (err) {
+    console.error('❌ Erro no postReenviar:', err);
+    return res.status(500).json({ message: 'Erro interno no reenvio.' });
   }
 }
 

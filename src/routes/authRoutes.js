@@ -1,35 +1,36 @@
 // src/routes/authRoutes.js
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const { SoftwareHouse, Cedente } = require('../models');
 require('dotenv').config();
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
-// rota de login para gerar token
+// login usando username e password
 router.post('/login', async (req, res) => {
-  const { cnpj_sh, token_sh, cnpj_cedente, token_cedente } = req.body;
+  const { username, password } = req.body;
 
-  if (!cnpj_sh || !token_sh || !cnpj_cedente || !token_cedente) {
+  // valida campos
+  if (!username || !password) {
     return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
   }
 
+  // login fixo para ambiente de desenvolvimento/teste
+  if (username !== 'admin' || password !== '123456') {
+    return res.status(401).json({ message: 'Credenciais inválidas.' });
+  }
+
   try {
-    const softwareHouse = await SoftwareHouse.findOne({ where: { cnpj: cnpj_sh, token: token_sh } });
-    const cedente = await Cedente.findOne({ where: { cnpj: cnpj_cedente, token: token_cedente } });
-
-    if (!softwareHouse || !cedente) {
-      return res.status(401).json({ message: 'Credenciais inválidas.' });
-    }
-
+    // payload básico do token
     const payload = {
-      softwareHouseId: softwareHouse.id,
-      cedenteId: cedente.id,
-      cnpj_sh,
-      cnpj_cedente
+      user: username,
+      softwareHouseId: 1,
+      cedenteId: 1,
+      cnpj_sh: '12345678000199',
+      cnpj_cedente: '11111111000111'
     };
 
+    // gera token JWT com expiração de 1h
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
 
     return res.json({ token });

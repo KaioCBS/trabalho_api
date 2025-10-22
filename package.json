@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "jest --runInBand",
-     "seed": "sequelize-cli db:seed:all --config src/config/config.js --env development"
-     
+  "start": "node src/index.js",
+  "migrate": "sequelize-cli db:migrate --env development",
+  "seed": "sequelize-cli db:seed:all --env development",
+  "migrate:undo:all": "sequelize-cli db:migrate:undo:all --env development"
   },
   "dependencies": {
     "axios": "^1.0.0",

@@ -1,42 +1,43 @@
-const { Sequelize } = require('sequelize');
-const sequelize = require('../config/database');
+'use strict';
 
-const CedenteModel = require('./cedente');
-const ContaModel = require('./conta');
-const ConvenioModel = require('./convenio');
-const ServicoModel = require('./servico');
-const SoftwareHouseModel = require('./software_house');
-const WebhookProcessadoModel = require('./webhook_processado');
-const BoletoModel = require('./boleto');
-const PagamentoModel = require('./pagamento');
-const PixModel = require('./pix');
+const fs = require('fs');
+const path = require('path');
+const Sequelize = require('sequelize');
+const basename = path.basename(__filename);
+const env = process.env.NODE_ENV || 'development';
+const config = require(__dirname + '/../config/config.js')[env];
+const db = {};
 
-const Cedente = CedenteModel(sequelize, Sequelize.DataTypes);
-const Conta = ContaModel(sequelize, Sequelize.DataTypes);
-const Convenio = ConvenioModel(sequelize, Sequelize.DataTypes);
-const Servico = ServicoModel(sequelize, Sequelize.DataTypes);
-const SoftwareHouse = SoftwareHouseModel(sequelize, Sequelize.DataTypes);
-const WebhookProcessado = WebhookProcessadoModel(sequelize, Sequelize.DataTypes);
-const Boleto = BoletoModel(sequelize, Sequelize.DataTypes);
-const Pagamento = PagamentoModel(sequelize, Sequelize.DataTypes);
-const Pix = PixModel(sequelize, Sequelize.DataTypes);
+let sequelize;
+if (config.use_env_variable) {
+  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+} else {
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
+}
 
-const db = {
-  sequelize,
-  Sequelize,
-  Cedente,
-  Conta,
-  Convenio,
-  Servico,
-  SoftwareHouse,
-  WebhookProcessado,
-  Boleto,
-  Pagamento,
-  Pix,
-};
+fs
+  .readdirSync(__dirname)
+  .filter(file => {
+    return (
+      file.indexOf('.') !== 0 &&
+      file !== basename &&
+      (file.slice(-3) === '.js' || file.slice(-3) === '.ts')
+    );
+  })
+  .forEach(file => {
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+    db[model.name] = model;
+  });
 
-Object.values(db).forEach(model => {
-  if (model && model.associate) model.associate(db);
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
 });
 
+db.sequelize = sequelize; // 👈 ESSENCIAL
+db.Sequelize = Sequelize;
+
 module.exports = db;
+
+console.log('📦 Models carregados:', Object.keys(db));
