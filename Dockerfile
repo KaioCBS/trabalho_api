@@ -6,3 +6,4 @@ RUN npm install --legacy-peer-deps
 COPY . .
 EXPOSE 3000
 CMD ["npm", "start"]
+CMD npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && node src/index.js

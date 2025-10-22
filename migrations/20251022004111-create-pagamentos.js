@@ -7,31 +7,31 @@ module.exports = {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false
+        allowNull: false,
       },
       status: {
         type: Sequelize.STRING,
         allowNull: false,
-        defaultValue: 'SCHEDULED'
+        defaultValue: 'SCHEDULED',
       },
       valor: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
       },
       data_criacao: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       cedente_id: {
         type: Sequelize.INTEGER,
-        allowNull: true
-      }
+        allowNull: true,
+      },
     });
   },
 
-  async down(queryInterface) {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Pagamentos');
-  }
+  },
 };

@@ -4,10 +4,13 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+     "seed": "sequelize-cli db:seed:all --config src/config/config.js --env development"
+     
   },
   "dependencies": {
     "axios": "^1.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "ioredis": "^5.3.2",

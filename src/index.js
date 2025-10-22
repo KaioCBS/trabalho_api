@@ -7,15 +7,14 @@ const { sequelize } = require('./models');
 const reenvioRoutes = require('./routes/reenvioRoutes');
 const { login } = require('./controllers/authController');
 const verifyToken = require('./middlewares/jwtAuth');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// rota pública de autenticação (gera JWT)
-app.post('/auth/login', login);
 
-// rota raiz e health check
 app.get('/', (req, res) => res.json({ message: 'Tab API rodando' }));
 app.get('/health', async (req, res) => {
   try {
@@ -25,6 +24,8 @@ app.get('/health', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+app.use('/auth', authRoutes);
 
 // 🔐 rotas protegidas com JWT (tudo em /api)
 app.use('/api', verifyToken, reenvioRoutes);
