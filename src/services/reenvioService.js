@@ -5,7 +5,7 @@ const cache = require('../cache');
 const db = require('../models');
 require('dotenv').config();
 
-const { WebhookReprocessado } = db;
+const { WebhookProcessado } = db;
 const WEBHOOK_URL = process.env.WEBHOOK_URL || 'https://webhook.site/teste';
 
 function getModelForProduct(product) {
