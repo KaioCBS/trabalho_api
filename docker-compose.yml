@@ -33,7 +33,7 @@ services:
     container_name: tab_api
     command: sh -c "until pg_isready -h tab_postgres -p 5432 -U postgres; do echo '⏳ Waiting for Postgres...'; sleep 2; done && npm start"
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - NODE_ENV=development
       - PORT=3000
