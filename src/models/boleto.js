@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     data_criacao: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
     cedente_id: { type: DataTypes.INTEGER, allowNull: true },
   }, {
-    tableName: 'Boletos',
+    tableName: 'boletos',
     timestamps: false,
   });
 

@@ -5,5 +5,12 @@ module.exports = {
   'config': path.resolve('src', 'config', 'config.js'),
   'models-path': path.resolve('src', 'models'),
   'seeders-path': path.resolve('src', 'seeders'),
-  'migrations-path': path.resolve('src', 'migrations')
+  'migrations-path': path.resolve('src', 'migrations'),
+  'clean-database': async () => {
+    const { Sequelize } = require('sequelize');
+    const config = require('./src/config/config.js').development;
+    const seq = new Sequelize(config.database, config.username, config.password, config);
+    await seq.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
+    await seq.close();
+  }
 };

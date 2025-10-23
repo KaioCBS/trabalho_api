@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     Cedente.belongsTo(models.SoftwareHouse, { foreignKey: 'softwarehouse_id', as: 'softwareHouse' });
     Cedente.hasMany(models.Conta, { foreignKey: 'cedente_id', as: 'contas' });
     Cedente.hasMany(models.Convenio, { foreignKey: 'cedente_id', as: 'convenios' });
-    Cedente.hasMany(models.WebhookProcessado, { foreignKey: 'cedente_id', as: 'webhooks' });
+   Cedente.hasMany(models.WebhookReprocessado, { foreignKey: 'cedente_id', as: 'webhooks' });
   };
 
   return Cedente;

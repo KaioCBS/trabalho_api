@@ -4,9 +4,12 @@
   "main": "src/index.js",
   "scripts": {
   "start": "node src/index.js",
+  "reset-db": "node reset-database.js",
   "migrate": "sequelize-cli db:migrate --env development",
   "seed": "sequelize-cli db:seed:all --env development",
-  "migrate:undo:all": "sequelize-cli db:migrate:undo:all --env development"
+  "migrate:undo:all": "sequelize-cli db:migrate:undo:all --env development",
+  "setup": "npm run migrate && npm run seed",
+   "test": "jest --runInBand"
   },
   "dependencies": {
     "axios": "^1.0.0",

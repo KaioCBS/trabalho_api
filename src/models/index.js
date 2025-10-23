@@ -36,8 +36,5 @@ Object.keys(db).forEach(modelName => {
 });
 
 db.sequelize = sequelize; // 👈 ESSENCIAL
-db.Sequelize = Sequelize;
 
 module.exports = db;
-
-console.log('📦 Models carregados:', Object.keys(db));

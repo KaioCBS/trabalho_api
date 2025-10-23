@@ -5,8 +5,46 @@ const cache = require('../cache');
 const db = require('../models');
 require('dotenv').config();
 
-const { WebhookProcessado } = db;
+const { WebhookReprocessado } = db;
 const WEBHOOK_URL = process.env.WEBHOOK_URL || 'https://webhook.site/teste';
+
+const ALLOWED_PRODUCTS = ['boleto','pagamento','pix'];
+const ALLOWED_TYPES = ['disponivel','cancelado','pago'];
+
+function validateRequestBody(data) {
+  const { product, id, kind, type } = data;
+  if (!product || !id || !kind || !type) {
+    const err = new Error('Campos obrigatórios: product, id, kind, type.');
+    err.status = 422;
+    throw err;
+  }
+  if (!ALLOWED_PRODUCTS.includes(product)) {
+    const err = new Error('product inválido. Valores permitidos: boleto, pagamento, pix.');
+    err.status = 422;
+    throw err;
+  }
+  if (!Array.isArray(id) || id.some(i => typeof i !== 'string')) {
+    const err = new Error('id deve ser um array de strings.');
+    err.status = 422;
+    throw err;
+  }
+  if (id.length === 0 || id.length > 30) {
+    const err = new Error('O array id deve ter entre 1 e 30 elementos.');
+    err.status = 422;
+    throw err;
+  }
+  if (kind !== 'webhook') {
+    const err = new Error('kind inválido. No momento apenas "webhook" é aceito.');
+    err.status = 422;
+    throw err;
+  }
+  if (!ALLOWED_TYPES.includes(type)) {
+    const err = new Error('type inválido. Valores permitidos: disponivel, cancelado, pago.');
+    err.status = 422;
+    throw err;
+  }
+}
+
 
 function getModelForProduct(product) {
   const tryNames = {
