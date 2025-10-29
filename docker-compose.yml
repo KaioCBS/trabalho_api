@@ -1,4 +1,4 @@
- services:
+  services:
    app:
     container_name: Trab_api
     ports:
@@ -10,3 +10,36 @@
     environment:
      - NODE_ENV=${NODE_ENV}
      - port=${port}
+
+    networks:
+     - trab_api-network
+
+
+   postgres:
+    container_name: trab_api
+    image: postgres:17
+    env_file: .env
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    environment:
+     - POSTGRES_USER=${POSTGRES_USER}
+     - POSTGRES_PASSOWRD=${POSTGRES_PASSWORD}
+     - POSTGRES_DB=${POSTGRES_DATABASE}
+    volumes:
+     - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+     test: ["CMD-SHELL","pg_isready -U ${POSTGRES_USERNAME}"]
+     interval: 10s
+     timeout: 5s
+     retries: 5
+     start_period: 30s
+    restart: unless-stopped
+    networks:
+     - trab_api-network
+
+  networks:
+    trab_api-network:
+      driver: bridge
+  volumes:
+    postgres_data:
+      driver: local
