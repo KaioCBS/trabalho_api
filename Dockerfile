@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando padrão ao iniciar o container
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]

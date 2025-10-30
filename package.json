@@ -4,12 +4,12 @@
   "description": "Projeto Disparador de Webhooks - conforme guia Tecnospeed",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "migrate": "npx sequelize-cli db:migrate"
+  "start": "node server.js",
+  "dev": "nodemon server.js",
+  "migrate": "npx sequelize-cli db:migrate"
   },
   "dependencies": {
-    "axios": "^1.7.3",
+    "axios": "^1.7.4",
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
     "joi": "^17.9.2",
