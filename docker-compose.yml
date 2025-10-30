@@ -1,45 +1,62 @@
-  services:
-   app:
-    container_name: Trab_api
+version: "3.8"
+
+services:
+  api:
+    build: .
+    container_name: tab_api
+    restart: always
     ports:
-    - 3000:3000
-    build:
-      context: .
-      dockerfile: Dockerfile.${NODE_ENV}
+      - "3000:3000"
     env_file: .env
-    environment:
-     - NODE_ENV=${NODE_ENV}
-     - port=${port}
-
-    networks:
-     - trab_api-network
-
-
-   postgres:
-    container_name: trab_api
-    image: postgres:17
-    env_file: .env
-    ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT}
-    environment:
-     - POSTGRES_USER=${POSTGRES_USER}
-     - POSTGRES_PASSOWRD=${POSTGRES_PASSWORD}
-     - POSTGRES_DB=${POSTGRES_DATABASE}
+    depends_on:
+      - db
+      - redis
     volumes:
-     - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-     test: ["CMD-SHELL","pg_isready -U ${POSTGRES_USERNAME}"]
-     interval: 10s
-     timeout: 5s
-     retries: 5
-     start_period: 30s
-    restart: unless-stopped
+      - .:/usr/src/app
     networks:
-     - trab_api-network
+      - proj_network
 
-  networks:
-    trab_api-network:
-      driver: bridge
-  volumes:
-    postgres_data:
-      driver: local
+  db:
+    image: postgres:16
+    container_name: tab_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - proj_network
+
+  redis:
+    image: redis:7
+    container_name: proj_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - proj_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: tab_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - proj_network
+
+volumes:
+  postgres_data:
+
+networks:
+  proj_network:
+    driver: bridge
