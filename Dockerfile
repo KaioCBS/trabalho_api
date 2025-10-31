@@ -15,5 +15,9 @@ COPY . .
 # Expõe a porta da API
 EXPOSE 3000
 
+RUN npm install
+
+
 # Comando padrão ao iniciar o container
-CMD ["npm", "start",]
+CMD ["npm", "start"]
+

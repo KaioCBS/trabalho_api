@@ -4,7 +4,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     // Inserir SoftwareHouse
     const [softwareHouse] = await queryInterface.bulkInsert(
-      'softwarehouses',
+      'softwarehouse',
       [
         {
           id: 1,
@@ -36,6 +36,6 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('cedentes', null, {});
-    await queryInterface.bulkDelete('softwarehouses', null, {});
+    await queryInterface.bulkDelete('softwarehouse', null, {});
   },
 };
