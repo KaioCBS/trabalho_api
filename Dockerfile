@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Instala dependências
-RUN npm install
+RUN npm install 
 
 # Copia o restante do projeto
 COPY . .
@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando padrão ao iniciar o container
-CMD ["npm", "start"]
+CMD ["npm", "start", "npx sequelize-cli db:migrate"]
