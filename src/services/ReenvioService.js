@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 const redis = require('../config/redis');
 const { WebhookReprocessado, Servico } = require('../models');
 const NotificacaoService = require('./NotificacaoService');

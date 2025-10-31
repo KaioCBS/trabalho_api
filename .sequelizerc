@@ -1,10 +1,8 @@
-const path = require("node:path");
-require('dotenv').config();
-require('ts-node/register');
+const path = require("path");
 
 module.exports = {
-  config: path.resolve('sequelize', 'config.ts'),
-  'models-path': path.resolve('sequelize', 'models'),
-  'seeders-path': path.resolve('sequelize', 'seeders'),
-  'migrations-path': path.resolve('sequelize', 'migrations'),
+  config: path.resolve('src/config', 'database.js'),
+  'models-path': path.resolve('src/models', 'models'),
+  'seeders-path': path.resolve('src/seeders', 'seeders'),
+  'migrations-path': path.resolve('src/migrations', ''),
 };
