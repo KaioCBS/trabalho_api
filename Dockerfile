@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando padrão ao iniciar o container
-CMD ["npm", "start", "npx sequelize-cli db:migrate"]
+CMD ["npm", "start",]
