@@ -22,7 +22,12 @@ module.exports = (sequelize, DataTypes) => {
     status: { 
         type: DataTypes.STRING,
          allowNull: false 
-        },
+        }
+      },
+        {
+           tableName: 'softwarehouses',
+    timestamps: true,
+    underscored: true,
   });
 
   SoftwareHouse.associate = (models) => {

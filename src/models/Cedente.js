@@ -30,8 +30,13 @@ module.exports = (sequelize, DataTypes) => {
     configuracao_notificacao: { 
         type: DataTypes.JSONB,
          allowNull: true
-         },
-  });
+         }
+        },
+        {
+       tableName: 'cedentes',
+      timestamps: true,
+      underscored: true,
+        });
 
     Cedente.associate = (models) => {
     Cedente.belongsTo(models.SoftwareHouse, { foreignKey: 'softwarehouse_id', as: 'softwarehouse' });
