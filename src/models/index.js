@@ -7,7 +7,7 @@ const config = require('../config/database');
 
 const db = {};
 
-// ✅ Cria a instância do Sequelize corretamente
+// Cria instância Sequelize com os campos corretos do config
 const sequelize = new Sequelize(
   config.database,
   config.username,
@@ -21,7 +21,7 @@ const sequelize = new Sequelize(
   }
 );
 
-// ✅ Carrega automaticamente todos os models da pasta
+// Carrega todos os models .js exceto index.js
 fs.readdirSync(__dirname)
   .filter((file) => file.endsWith('.js') && file !== 'index.js')
   .forEach((file) => {
@@ -29,14 +29,13 @@ fs.readdirSync(__dirname)
     db[model.name] = model;
   });
 
-// ✅ Configura associações entre models
+// Executa associações, se existirem
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
 
-// ✅ Exporta o objeto completo
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
