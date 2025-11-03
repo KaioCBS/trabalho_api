@@ -8,7 +8,4 @@ module.exports = {
        conta_id: { type: Sequelize.INTEGER, allowNull: false },
     });
   },
-  async down(queryInterface) {
-    await queryInterface.dropTable('Convenio');
-  },
 };

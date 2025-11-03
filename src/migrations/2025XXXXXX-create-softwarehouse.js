@@ -9,7 +9,4 @@ module.exports = {
       status: { type: Sequelize.STRING, allowNull: false },
     });
   },
-  async down(queryInterface) {
-    await queryInterface.dropTable('SoftwareHouses');
-  },
 };

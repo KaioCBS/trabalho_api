@@ -11,7 +11,4 @@ module.exports = {
       configuracao_notificacao: { type: Sequelize.JSONB, allowNull: true },
     });
   },
-  async down(queryInterface) {
-    await queryInterface.dropTable('Cedente');
-  },
 };

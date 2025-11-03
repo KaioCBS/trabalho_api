@@ -12,7 +12,4 @@ module.exports = {
         protocolo: { type: Sequelize.STRING, allowNull: false },
     });
   },
-  async down(queryInterface) {
-    await queryInterface.dropTable('webhookreprocessado');
-  },
 };
