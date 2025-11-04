@@ -1,13 +1,30 @@
+const jwt = require('jsonwebtoken');
 const { SoftwareHouse, Cedente } = require('../models');
+const jwtSecret = process.env.JWT_SECRET || 'supersecret-chave-jwt';
 
 module.exports = async (req, res, next) => {
   try {
-    const {
-      'cnpj-sh': cnpjSh,
-      'token-sh': tokenSh,
-      'cnpj-cedente': cnpjCedente,
-      'token-cedente': tokenCedente,
-    } = req.headers;
+    const authHeader = req.headers.authorization;
+
+    // Try JWT first
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, jwtSecret);
+        req.user = decoded;
+        return next();
+      } catch (err) {
+        return res.status(401).json({ message: 'Token JWT inválido ou expirado.' });
+      }
+    }
+
+    // Legacy headers (cnpj-sh etc), accept x- prefix too
+    const getHeader = (name) => req.headers[name] || req.headers[`x-${name}`];
+
+    const cnpjSh = getHeader('cnpj-sh');
+    const tokenSh = getHeader('token-sh');
+    const cnpjCedente = getHeader('cnpj-cedente');
+    const tokenCedente = getHeader('token-cedente');
 
     // Verifica se todos os campos obrigatórios estão presentes
     if (!cnpjSh || !tokenSh || !cnpjCedente || !tokenCedente) {
@@ -27,14 +44,19 @@ module.exports = async (req, res, next) => {
 
     // Valida Cedente vinculado
     const cedente = await Cedente.findOne({
-      where: { cnpj: cnpjCedente, token: tokenCedente, status: 'ativo', softwarehouse_id: softwareHouse.id },
+      where: {
+        cnpj: cnpjCedente,
+        token: tokenCedente,
+        status: 'ativo',
+        softwarehouse_id: softwareHouse.id,
+      },
     });
 
     if (!cedente) {
       return res.status(401).json({ message: 'Cedente não autenticado.' });
     }
 
-    // Armazena no request para uso posterior
+    // Armazena no request para uso posterior (compat com req.context prev)
     req.context = { softwareHouse, cedente };
 
     next();

@@ -11,6 +11,12 @@ class ReenvioService {
    * @param {Object} context - Contexto da autenticação (softwareHouse, cedente).
    */
   static async reenviar(params, context) {
+    // Normalizações e validações iniciais
+    if (!params || Object.keys(params).length === 0) {
+      throw { status: 400, message: 'Corpo da requisição vazio.' };
+    }
+    if (typeof params.id === 'string') params.id = [params.id];
+
     const { product, id, kind, type } = params;
     const { cedente } = context;
 
@@ -75,26 +81,38 @@ class ReenvioService {
     }
 
     // Simula envio do webhook
-    const protocolo = uuidv4();
+    const protocolo = randomUUID(); // ✅ CORRIGIDO: uuidv4() → randomUUID()
     const payload = {
       uuid: protocolo,
       kind,
       type,
-      servicos: id,
+      servicos: id, // Mantido servicos para o payload do webhook externo
       data: new Date(),
     };
-
+    
     try {
+      // 1. Grava no Redis por 1 hora ANTES da gravação no DB. 
+      //    Se o envio (passo 2) for bem-sucedido, ativa o rate limit imediatamente.
+      await redis.setEx(cacheKey, 3600, 'true');
+
+      // 2. Tenta enviar o webhook
       await axios.post(notificacao.url, payload, {
         headers: notificacao.headers_adicionais?.[0] || {
           'content-type': 'application/json',
         },
       });
+      
     } catch (error) {
-      throw { status: 400, message: 'Não foi possível gerar a notificação. Tente novamente mais tarde.' };
+      // Se houve falha no envio:
+      
+      // 3. Remove o cache para permitir uma nova tentativa pelo cliente.
+      await redis.del(cacheKey); 
+      
+      // 4. CORRIGIDO: Retorna 500 (Erro de servidor externo), e não 400 (Erro do cliente)
+      throw { status: 500, message: 'Não foi possível gerar a notificação devido a uma falha de serviço externo. Tente novamente mais tarde.' };
     }
 
-    // Se chegou até aqui, salva no banco
+    // Se chegou até aqui (envio e cache de reenvio OK), salva no banco
     await WebhookReprocessado.create({
       id: protocolo,
       data: payload,
@@ -104,9 +122,8 @@ class ReenvioService {
       servico_id: JSON.stringify(id),
       protocolo,
     });
-
-    // Grava no Redis por 1 hora
-    await redis.setEx(cacheKey, 3600, 'true');
+    
+    // O redis.setEx já foi executado no bloco try.
 
     return { protocolo, message: 'Webhook reenviado com sucesso.' };
   }

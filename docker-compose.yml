@@ -1,7 +1,6 @@
-version: "3.8"
 
 services:
-  trab_api:
+  app:
     build: .
     container_name: tra_api
     restart: always
@@ -9,41 +8,52 @@ services:
       - "3000:3000"
     env_file: .env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy  # 👈 Aguarda o banco ficar saudável
+      redis:
+        condition: service_healthy
     networks:
       - proj_network
 
   db:
-    image: postgres:16
+    image: postgres:15
     container_name: tra_db
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5433:5432"
+      POSTGRES_DB: tra_api
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:  # 👈 Health check para o PostgreSQL
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5  
     networks:
       - proj_network
 
   redis:
     image: redis:7
-    container_name: proj_redis
+    container_name: tra_redis
     restart: always
     ports:
       - "6379:6379"
+    healthcheck:  # 👈 Health check para o Redis
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     networks:
       - proj_network
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: tab_pgadmin
-    restart: always
+    container_name: tra_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_EMAIL: admin@local
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"

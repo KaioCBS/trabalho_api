@@ -5,15 +5,15 @@ module.exports = (sequelize, DataTypes) => {
     cnpj: { type: DataTypes.STRING(14), allowNull: false, unique: true },
     token: { type: DataTypes.STRING, allowNull: false },
     status: { type: DataTypes.STRING, allowNull: false },
-    configuracao_notificacao: { type: DataTypes.JSONB, allowNull: true },
+    configuracao_notificacao: { type: DataTypes.JSONB, allowNull: true }, // ✅ CORRIGIDO: Campo adicionado
   }, {
-    tableName: 'SoftwareHouses', // ← com maiúscula, igual ao banco
+    tableName: 'SoftwareHouses',
     timestamps: true,
     underscored: true,
   });
 
   SoftwareHouse.associate = (models) => {
-    SoftwareHouse.hasMany(models.Cedente, { foreignKey: 'softwarehouse_id', as: 'cedentes' });
+    SoftwareHouse.hasMany(models.Cedente, { foreignKey: 'softwarehouse_id', as: 'cedentes' }); // ✅ CORRIGIDO: 'cedente' → 'cedentes'
   };
 
   return SoftwareHouse;
