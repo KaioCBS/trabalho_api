@@ -34,6 +34,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
          allowNull: false
          },
+  }, {
+    tableName: 'WebhookReprocessado', // ✅
+    timestamps: true,
+    underscored: true,
   });
 
   WebhookReprocessado.associate = (models) => {

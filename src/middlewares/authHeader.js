@@ -11,22 +11,36 @@ module.exports = async (req, res, next) => {
       const token = authHeader.split(' ')[1];
       try {
         const decoded = jwt.verify(token, jwtSecret);
-        req.user = decoded;
+        
+        // Buscar dados completos do cedente para o context
+        const cedente = await Cedente.findOne({
+          where: { id: decoded.id, status: 'ativo' },
+          include: [{ model: SoftwareHouse, as: 'softwarehouse' }]
+        });
+        
+        if (!cedente) {
+          return res.status(401).json({ message: 'Cedente não encontrado.' });
+        }
+        
+        req.context = {
+          cedente: cedente,
+          softwareHouse: cedente.softwarehouse
+        };
+        
         return next();
       } catch (err) {
         return res.status(401).json({ message: 'Token JWT inválido ou expirado.' });
       }
     }
 
-    // Legacy headers (cnpj-sh etc), accept x- prefix too
+    // Legacy headers (cnpj-sh etc)
     const getHeader = (name) => req.headers[name] || req.headers[`x-${name}`];
 
     const cnpjSh = getHeader('cnpj-sh');
     const tokenSh = getHeader('token-sh');
     const cnpjCedente = getHeader('cnpj-cedente');
-    const tokenCedente = getHeader('token-cedente');
+    const tokenCedente = getHeader('token-cedente'); // ✅ CORRIGIDO: era cnpjCedente
 
-    // Verifica se todos os campos obrigatórios estão presentes
     if (!cnpjSh || !tokenSh || !cnpjCedente || !tokenCedente) {
       return res.status(401).json({
         message: 'Headers de autenticação obrigatórios não informados.',
@@ -50,14 +64,25 @@ module.exports = async (req, res, next) => {
         status: 'ativo',
         softwarehouse_id: softwareHouse.id,
       },
+      include: [{ model: SoftwareHouse, as: 'softwarehouse' }]
     });
 
     if (!cedente) {
       return res.status(401).json({ message: 'Cedente não autenticado.' });
     }
 
-    // Armazena no request para uso posterior (compat com req.context prev)
-    req.context = { softwareHouse, cedente };
+    // Armazena no request para uso posterior
+    req.context = {
+      softwareHouse: softwareHouse,
+      cedente: cedente
+    };
+
+    console.log('🔍 DEBUG - Context definido:', {
+      hasCedente: !!req.context?.cedente,
+      hasSoftwareHouse: !!req.context?.softwareHouse,
+      cedenteId: req.context?.cedente?.id,
+      cedenteCnpj: req.context?.cedente?.cnpj
+    });
 
     next();
   } catch (error) {

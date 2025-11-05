@@ -8,14 +8,14 @@ module.exports = (sequelize, DataTypes) => {
     status: { type: DataTypes.STRING, allowNull: false },
     configuracao_notificacao: { type: DataTypes.JSONB, allowNull: true },
   }, {
-    tableName: 'Cedente',
+    tableName: 'Cedente', // ✅
     timestamps: true,
     underscored: true,
   });
 
   Cedente.associate = (models) => {
     Cedente.belongsTo(models.SoftwareHouse, { foreignKey: 'softwarehouse_id', as: 'softwarehouse' });
-    Cedente.hasMany(models.Conta, { foreignKey: 'cedente_id', as: 'contas' }); // ✅ CORRIGIDO: Associação adicionada
+    Cedente.hasMany(models.Conta, { foreignKey: 'cedente_id', as: 'contas' });
   };
 
   return Cedente;

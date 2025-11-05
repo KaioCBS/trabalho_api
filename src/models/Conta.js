@@ -30,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.JSONB,
          allowNull: true
          },
+  }, {
+    tableName: 'Conta', // ✅
+    timestamps: true,
+    underscored: true,
   });
 
   Conta.associate = (models) => {

@@ -2,148 +2,91 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // Verificar se já existe SoftwareHouse antes de inserir
-    const existingSh = await queryInterface.sequelize.query(
-      'SELECT id FROM "SoftwareHouses" WHERE cnpj = :cnpj',
+    const now = new Date();
+    
+    // 1. Primeiro SoftwareHouse
+    await queryInterface.bulkInsert('SoftwareHouses', [
       {
-        replacements: { cnpj: '12345678000199' },
-        type: queryInterface.sequelize.QueryTypes.SELECT
-      }
-    );
+        cnpj: '12345678000199',
+        token: 'token_sh_teste',
+        status: 'ativo',
+        data_criacao: now,
+        created_at: now,
+        updated_at: now
+      },
+    ], {});
 
-    if (existingSh.length === 0) {
-      await queryInterface.bulkInsert('SoftwareHouses', [
-        {
-          cnpj: '12345678000199',
-          token: 'token_sh_teste',
-          status: 'ativo',
-          data_criacao: new Date(),
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-      ], {});
-    }
-
-    // Verificar se já existe Cedente antes de inserir
-    const existingCedente = await queryInterface.sequelize.query(
-      'SELECT id FROM "Cedente" WHERE cnpj = :cnpj',
+    // 2. Depois Cedente
+    await queryInterface.bulkInsert('Cedente', [
       {
-        replacements: { cnpj: '11222333000144' },
-        type: queryInterface.sequelize.QueryTypes.SELECT
-      }
-    );
+        cnpj: '11222333000144',
+        token: 'token_cedente_teste',
+        softwarehouse_id: 1,
+        status: 'ativo',
+        data_criacao: now,
+        configuracao_notificacao: '{"url": "https://webhook.site/teste", "ativado": true, "headers_adicionais": [{"content-type": "application/json"}]}',
+        created_at: now,
+        updated_at: now
+      },
+    ], {});
 
-    if (existingCedente.length === 0) {
-      // Buscar ID da SoftwareHouse
-      const shResult = await queryInterface.sequelize.query(
-        'SELECT id FROM "SoftwareHouses" WHERE cnpj = :cnpj',
-        {
-          replacements: { cnpj: '12345678000199' },
-          type: queryInterface.sequelize.QueryTypes.SELECT
-        }
-      );
-
-      if (shResult.length > 0) {
-        await queryInterface.bulkInsert('Cedente', [
-          {
-            cnpj: '11222333000144',
-            token: 'token_cedente_teste',
-            softwarehouse_id: shResult[0].id,
-            status: 'ativo',
-            data_criacao: new Date(),
-            configuracao_notificacao: '{"url": "https://webhook.site/teste", "ativado": true, "headers_adicionais": [{"content-type": "application/json"}]}',
-            created_at: new Date(),
-            updated_at: new Date()
-          },
-        ], {});
-      }
-    }
-
-    // Verificar se já existe Conta antes de inserir
-    const existingConta = await queryInterface.sequelize.query(
-      'SELECT id FROM "Conta" WHERE cedente_id = 1 AND produto = :produto',
+    // 3. Depois Conta
+    await queryInterface.bulkInsert('Conta', [
       {
-        replacements: { produto: 'boleto' },
-        type: queryInterface.sequelize.QueryTypes.SELECT
-      }
-    );
+        produto: 'boleto',
+        banco_codigo: '001',
+        cedente_id: 1,
+        status: 'ativo',
+        data_criacao: now,
+        configuracao_notificacao: '{"url": "https://webhook.site/134ddf82-5ad9-4011-998e-99fefc79edfb", "ativado": true}',
+        created_at: now,
+        updated_at: now
+      },
+    ], {});
 
-    if (existingConta.length === 0) {
-      await queryInterface.bulkInsert('Conta', [
-        {
-          produto: 'boleto',
-          banco_codigo: '001',
-          cedente_id: 1,
-          status: 'ativo',
-          data_criacao: new Date(),
-          configuracao_notificacao: '{"url": "https://webhook.site/teste", "ativado": true}',
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-      ], {});
-    }
-
-    // Verificar se já existe Convênio antes de inserir
-    const existingConvenio = await queryInterface.sequelize.query(
-      'SELECT id FROM "Convenio" WHERE numero_convenio = :numero',
+    // 4. Depois Convênio
+    await queryInterface.bulkInsert('Convenio', [
       {
-        replacements: { numero: 'CONV001' },
-        type: queryInterface.sequelize.QueryTypes.SELECT
-      }
-    );
+        numero_convenio: 'CONV001',
+        conta_id: 1,
+        data_criacao: now,
+        created_at: now,
+        updated_at: now
+      },
+    ], {});
 
-    if (existingConvenio.length === 0) {
-      await queryInterface.bulkInsert('Convenio', [
-        {
-          numero_convenio: 'CONV001',
-          conta_id: 1,
-          data_criacao: new Date(),
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-      ], {});
-    }
-
-    // Verificar se já existem Serviços antes de inserir
-    const existingServicos = await queryInterface.sequelize.query(
-      'SELECT COUNT(*) as count FROM "Servico" WHERE id IN (1, 2, 3)',
+    // 5. Por último Serviços
+    await queryInterface.bulkInsert('servicos', [
       {
-        type: queryInterface.sequelize.QueryTypes.SELECT
-      }
-    );
-
-    if (existingServicos[0].count === '0') {
-      await queryInterface.bulkInsert('Servico', [
-        {
-          id: 1,
-          convenio_id: 1,
-          status: 'REGISTRADO',
-          data_criacao: new Date(),
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-        {
-          id: 2,
-          convenio_id: 1,
-          status: 'SCHEDULED',
-          data_criacao: new Date(),
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-        {
-          id: 3,
-          convenio_id: 1,
-          status: 'ACTIVE',
-          data_criacao: new Date(),
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-      ], {});
-    }
+        id: 1,
+        convenio_id: 1,
+        status: 'REGISTRADO',
+        data_criacao: now,
+        created_at: now,
+        updated_at: now
+      },
+      {
+        id: 2,
+        convenio_id: 1,
+        status: 'SCHEDULED',
+        data_criacao: now,
+        created_at: now,
+        updated_at: now
+      },
+      {
+        id: 3,
+        convenio_id: 1,
+        status: 'ACTIVE',
+        data_criacao: now,
+        created_at: now,
+        updated_at: now
+      },
+    ], {});
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Servico', null, {});
+    // ✅ ORDEM CORRETA: do mais dependente para o menos dependente
+    await queryInterface.bulkDelete('servicos', null, {});
     await queryInterface.bulkDelete('Convenio', null, {});
     await queryInterface.bulkDelete('Conta', null, {});
     await queryInterface.bulkDelete('Cedente', null, {});

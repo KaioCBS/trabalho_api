@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
          allowNull: false 
         },
+  }, {
+    tableName: 'servicos', // ✅ (porque a tabela foi criada como servicos)
+    timestamps: true,
+    underscored: true,
   });
 
   Servico.associate = (models) => {

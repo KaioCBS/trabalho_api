@@ -19,4 +19,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando para iniciar a aplicação (APENAS UM CMD)
-CMD sh -c "npx sequelize-cli db:migrate && npm start"
+CMD ["npm", "start"]

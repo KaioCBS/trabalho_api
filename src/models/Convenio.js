@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
          type: DataTypes.INTEGER,
           allowNull: false 
         },
+  }, {
+    tableName: 'Convenio', // ✅
+    timestamps: true,
+    underscored: true,
   });
 
   Convenio.associate = (models) => {
