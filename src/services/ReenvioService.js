@@ -44,11 +44,12 @@ class ReenvioService {
     // Gera um hash de cache baseado nos parâmetros
     const cacheKey = `reenviar:${product}:${type}:${JSON.stringify(id)}`;
 
-    // Verifica se já foi processado recentemente
-    // cached = await redis.get(cacheKey);
-    // if (cached) {
-     // throw { status: 429, message: 'Requisição duplicada detectada. Tente novamente após 1 hora.' };
-    //}
+     // Verifica se já foi processado recentemente
+    let cached = await redis.get(cacheKey);
+    if (cached) {
+    throw { status: 429, message: 'Requisição duplicada . Tente novamente após 1 hora.' };
+    }
+
 
     // Verifica se todos os IDs existem e estão na situação correta
     const servicos = await Servico.findAll({ where: { id } });
