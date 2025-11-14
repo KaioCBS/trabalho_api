@@ -27,7 +27,7 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Rota de Login (gera token JWT)
+// Rota de Login 
 router.post('/auth/login', AuthController.login);
 
 // Rota de Reenvio

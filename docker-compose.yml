@@ -9,7 +9,7 @@ services:
     env_file: .env
     depends_on:
       db:
-        condition: service_healthy  # 👈 Aguarda o banco ficar saudável
+        condition: service_healthy  
       redis:
         condition: service_healthy
     networks:
@@ -27,7 +27,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    healthcheck:  # 👈 Health check para o PostgreSQL
+    healthcheck:  
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
@@ -41,7 +41,7 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    healthcheck:  # 👈 Health check para o Redis
+    healthcheck:  
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s

@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
          allowNull: true
          },
   }, {
-    tableName: 'Conta', // ✅
+    tableName: 'Conta', 
     timestamps: true,
     underscored: true,
   });

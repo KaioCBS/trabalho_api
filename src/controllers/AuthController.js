@@ -5,7 +5,6 @@ const jwtSecret = process.env.JWT_SECRET || 'supersecret-chave-jwt';
 module.exports = {
   async login(req, res) {
     try {
-      // Accept either payload using keys: cnpj, token, tipo (sh or cedente)
       const { cnpj, token, tipo } = req.body;
 
       if (!cnpj || !token || !tipo) {

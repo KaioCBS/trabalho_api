@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
          allowNull: false 
         },
   }, {
-    tableName: 'servicos', // ✅ (porque a tabela foi criada como servicos)
+    tableName: 'servicos', 
     timestamps: true,
     underscored: true,
   });

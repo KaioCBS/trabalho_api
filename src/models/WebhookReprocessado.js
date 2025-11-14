@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
          allowNull: false
          },
   }, {
-    tableName: 'WebhookReprocessado', // ✅
+    tableName: 'WebhookReprocessado', 
     timestamps: true,
     underscored: true,
   });

@@ -6,13 +6,11 @@ module.exports = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-    // Try JWT first
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       try {
         const decoded = jwt.verify(token, jwtSecret);
         
-        // Buscar dados completos do cedente para o context
         const cedente = await Cedente.findOne({
           where: { id: decoded.id, status: 'ativo' },
           include: [{ model: SoftwareHouse, as: 'softwarehouse' }]
@@ -33,13 +31,12 @@ module.exports = async (req, res, next) => {
       }
     }
 
-    // Legacy headers (cnpj-sh etc)
     const getHeader = (name) => req.headers[name] || req.headers[`x-${name}`];
 
     const cnpjSh = getHeader('cnpj-sh');
     const tokenSh = getHeader('token-sh');
     const cnpjCedente = getHeader('cnpj-cedente');
-    const tokenCedente = getHeader('token-cedente'); // ✅ CORRIGIDO: era cnpjCedente
+    const tokenCedente = getHeader('token-cedente'); 
 
     if (!cnpjSh || !tokenSh || !cnpjCedente || !tokenCedente) {
       return res.status(401).json({
@@ -47,7 +44,6 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    // Valida SoftwareHouse
     const softwareHouse = await SoftwareHouse.findOne({
       where: { cnpj: cnpjSh, token: tokenSh, status: 'ativo' },
     });
@@ -56,7 +52,6 @@ module.exports = async (req, res, next) => {
       return res.status(401).json({ message: 'SoftwareHouse não autenticada.' });
     }
 
-    // Valida Cedente vinculado
     const cedente = await Cedente.findOne({
       where: {
         cnpj: cnpjCedente,
@@ -71,7 +66,6 @@ module.exports = async (req, res, next) => {
       return res.status(401).json({ message: 'Cedente não autenticado.' });
     }
 
-    // Armazena no request para uso posterior
     req.context = {
       softwareHouse: softwareHouse,
       cedente: cedente

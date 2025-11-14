@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-// Config para desenvolvimento LOCAL (fora do Docker)
 const isDocker = process.env.INSIDE_DOCKER !== 'true';
 
 module.exports = {
