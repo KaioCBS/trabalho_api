@@ -45,58 +45,100 @@ class ReenvioService {
       throw { status: 429, message: 'Requisição idêntica enviada recentemente. Tente novamente mais tarde.' };
     }
     
-    const situacaoEsperada = {
-      disponivel: 'REGISTRADO',
-      cancelado: 'CANCELADO',
-      pago: 'PAGO',
-    }[type];
+    const statusMapping = {
+  boleto: {
+    disponivel: 'REGISTRADO',
+    cancelado:  'BAIXADO',
+    pago:       'LIQUIDADO'
+  },
+  pagamento: {
+    disponivel: 'SCHEDULED',
+    cancelado:  'CANCELLED',
+    pago:       'PAID'
+  },
+  pix: {
+    disponivel: 'ACTIVE',
+    cancelado:  'REJECTED',
+    pago:       'LIQUIDATED'
+  }
+};
+if (!statusMapping[product] || !statusMapping[product][type]) {
+  throw { status: 400, message: 'Não foi possível validar a situação esperada para este produto/type.' };
+}
 
-    // Busca os serviços, filtrando por ID e garantindo que pertencem ao Cedente e ao Produto
+const situacaoEsperada = statusMapping[product][type];
+    // Busca os serviços (sem filtrar pelo produto na query) e inclui Convenio->Conta
     const servicos = await Servico.findAll({
-        where: {
-          id: id,
+      where: { id: id },
+      include: [
+        {
+          model: Convenio,
+          as: 'convenio',
+          required: true,
+          include: [
+            {
+              model: Conta,
+              as: 'conta',
+              required: true,
+              // OBS: removi where que filtrava por cedente_id e produto
+            },
+          ],
         },
-        include: [
-            { 
-                model: Convenio, 
-                as: 'convenio', 
-                required: true, 
-                include: [
-                    { 
-                        model: Conta, 
-                        as: 'conta',
-                        required: true, 
-                        where: { 
-                            cedente_id: cedente.id, 
-                            produto: product 
-                        }
-                    }
-                ]
-            }
-        ],
-        limit: id.length,
+      ],
+      limit: id.length,
     });
-    
-    // 1. Checa se todos os IDs foram encontrados e são do PRODUTO correto
+
+    // Log para debug — mostre o que foi buscado
+    logger.info(`ReenvioService: encontrados ${servicos.length} servicos para ids [${id.join(',')}]`);
+
+    // Verifica se achou todos os ids pedidos
     if (servicos.length !== id.length) {
-      throw { 
-          status: 404, 
-          message: `Pelo menos um dos serviços não foi encontrado, não pertence a este cedente, ou não é do produto "${product}" solicitado.` 
+      logger.warn('ReenvioService: mismatch count - servicos encontrados:', servicos.map(s => ({
+        id: s.id,
+        convenio_id: s.convenio_id,
+        conta_produto: s.convenio?.conta?.produto,
+        conta_cedente_id: s.convenio?.conta?.cedente_id
+      })));
+      throw {
+        status: 404,
+        message: `Pelo menos um dos serviços não foi encontrado, não pertence a este cedente, ou não é do produto "${product}" solicitado.`
       };
     }
 
-    // 2. CORREÇÃO DE STATUS: Validação de STATUS usando .trim()
-    const servicosInvalidos = servicos.filter(servico => 
+    // Agora valide que cada serviço pertence ao cedente correto e ao produto correto
+    const servicosNaoDoCedenteOuProduto = servicos.filter(s => {
+      const conta = s.convenio && s.convenio.conta;
+      if (!conta) return true; // sem conta -> inválido
+      if (String(conta.cedente_id) !== String(cedente.id)) return true; // não pertence ao cedente
+      if (String(conta.produto) !== String(product)) return true; // produto diferente
+      return false;
+    });
+
+    if (servicosNaoDoCedenteOuProduto.length > 0) {
+      logger.warn('ReenvioService: servicos inválidos por cedente/produto:', servicosNaoDoCedenteOuProduto.map(s => ({
+        id: s.id,
+        conta_produto: s.convenio?.conta?.produto,
+        conta_cedente_id: s.convenio?.conta?.cedente_id
+      })));
+      throw {
+        status: 404,
+        message: `Pelo menos um dos serviços não foi encontrado, não pertence a este cedente, ou não é do produto "${product}" solicitado.`
+      };
+    }
+
+    // Validação de status (mantém sua lógica)
+    const servicosInvalidos = servicos.filter(servico =>
       servico.status.trim().toUpperCase() !== situacaoEsperada
     );
 
     if (servicosInvalidos.length > 0) {
+      logger.warn('ReenvioService: servicos com status inválido:', servicosInvalidos.map(s => ({ id: s.id, status: s.status })));
       throw {
         status: 422,
-        message: `Não foi possível gerar a notificação. Pelo menos um dos serviços tem o status inválido para a requisição de "${product}". O status esperado era "${situacaoEsperada}".`, 
+        message: `Não foi possível gerar a notificação. Pelo menos um dos serviços tem o status inválido para a requisição de "${product}". O status esperado era "${situacaoEsperada}".`,
       };
     }
-    // FIM DA CORREÇÃO
+
 
     const notificacao = await NotificacaoService.obterConfiguracao(cedente, product);
 
