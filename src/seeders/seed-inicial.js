@@ -97,7 +97,7 @@ module.exports = {
       },
     ]);
 
-    // 4. CONVENIOS (FALTAVA ESSA PARTE)
+    // 4. CONVENIOS 
     await queryInterface.bulkInsert("Convenio", [
   {
     id: 1,

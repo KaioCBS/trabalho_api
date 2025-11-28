@@ -126,7 +126,7 @@ const situacaoEsperada = statusMapping[product][type];
       };
     }
 
-    // Validação de status (mantém sua lógica)
+    // Validação de status 
     const servicosInvalidos = servicos.filter(servico =>
       servico.status.trim().toUpperCase() !== situacaoEsperada
     );

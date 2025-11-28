@@ -62,8 +62,6 @@ class ProtocoloService {
       throw { status: 400, message: 'Protocolo não encontrado.' };
     }
 
-    // Correção: Removemos o 'if (protocolo.type === "sent")'
-    // Como o registro existe no banco, assumimos que foi processado com sucesso.
     // Salva no cache por 1 hora (3600 segundos)
     await redis.setEx(cacheKey, 3600, JSON.stringify(protocolo));
 
